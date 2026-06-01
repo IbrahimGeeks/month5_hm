@@ -2,7 +2,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from . models import Category, Product, Review
-from . serializer import CategorySerializer, ProductSerializer, ReviewSerializer
+from . serializer import CategorySerializer, ProductSerializer, ReviewSerializer, ProductReviewsSerializer
+from django.db.models import Count
 
 
 @api_view(['GET'])
@@ -49,4 +50,10 @@ def review_detail_api_view(request, id):
     except Review.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND, data={'error': 'Review not found'})
     serializer = ReviewSerializer(review)
+    return Response(data=serializer.data)
+
+api_view(['GET'])
+def product_reviews_list_api_view(request):
+    products = Product.objects.prefetch_related('reviews').all()
+    serializer = ProductReviewsSerializer(products, many=True)
     return Response(data=serializer.data)
