@@ -1,7 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.authtoken.models import Token
+from rest_framework_simplejwt.tokens import RefreshToken 
+
 from .models import UserConfirmation
 from .serializers import RegisterSerializer, ConfirmSerializer, LoginSerializer
 
@@ -54,7 +55,14 @@ class LoginAPIView(APIView):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             user = serializer.validated_data['user']
-            token, _ = Token.objects.get_or_create(user=user)
-            return Response(data={'token': token.key}, status=status.HTTP_200_OK)
+            refresh = RefreshToken.for_user(user)
+            
+            return Response(
+                data={
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token),
+                }, 
+                status=status.HTTP_200_OK
+            )
             
         return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)

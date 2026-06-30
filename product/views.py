@@ -4,7 +4,7 @@ from rest_framework import status
 from . models import Category, Product, Review
 from . serializer import CategorySerializer, ProductSerializer, ReviewSerializer, ProductReviewsSerializer
 from django.db.models import Count
-
+from rest_framework.permissions import IsAuthenticated
 
 @api_view(['GET', 'POST'])
 def category_list_api_view(request):

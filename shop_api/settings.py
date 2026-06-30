@@ -30,7 +30,17 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
 # Application definition
 
 INSTALLED_APPS = [
@@ -41,7 +51,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'rest_framework.authtoken',
+    'rest_framework.',
     'users',
     'product',
 ]
@@ -127,3 +137,12 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 AUTH_USER_MODEL = 'users.CustomUser'
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'AuthToken': {
+            'type': 'apiKey',
+            "name": 'Authorization',
+            'in': 'header'
+        }
+    }
+}

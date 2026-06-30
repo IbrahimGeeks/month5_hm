@@ -3,7 +3,30 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from django.contrib.auth import authenticate
 from .models import UserConfirmation, CustomUser
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from .models import Product
+from common.validators import validate_user_age
 
+class ProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = '__all__'
+        read_only_fields = ['owner'] 
+
+    def validate(self, attrs):
+        request = self.context.get('request')
+        if request and request.method == 'POST':
+            user = request.user
+            token_payload = request.auth
+            
+            if token_payload and 'birthdate' in token_payload:
+                birthdate_from_token = token_payload['birthdate']
+            else:
+                birthdate_from_token = user.birthdate if hasattr(user, 'birthdate') else None
+            validate_user_age(birthdate_from_token)
+
+        return attrs
+    
 class RegisterSerializer(serializers.Serializer):
     email = serializers.EmailField()
     phone_number = serializers.CharField(required=False, allow_blank=True, allow_null=True)
@@ -61,3 +84,11 @@ class LoginSerializer(serializers.Serializer):
 
         attrs['user'] = user
         return attrs
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        token['birthdate'] = str(user.birthdate) if user.birthdate else None
+
+        return token
